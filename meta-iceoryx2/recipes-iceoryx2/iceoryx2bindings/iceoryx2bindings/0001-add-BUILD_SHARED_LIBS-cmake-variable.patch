@@ -1,0 +1,107 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 257691ed..b899f5b5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -18,6 +18,8 @@ project(iceoryx2 VERSION ${IOX2_VERSION_STRING})
+ 
+ set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # "Create compile_commands.json file"
+ 
++option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
++
+ macro(add_option)
+     set(ONE_VALUE_ARGS NAME DESCRIPTION DEFAULT_VALUE)
+     cmake_parse_arguments(ADD_OPTION "" "${ONE_VALUE_ARGS}" "" ${ARGN})
+diff --git a/iceoryx2-ffi/c/CMakeLists.txt b/iceoryx2-ffi/c/CMakeLists.txt
+index 8a2e46dc..2427bf14 100644
+--- a/iceoryx2-ffi/c/CMakeLists.txt
++++ b/iceoryx2-ffi/c/CMakeLists.txt
+@@ -74,7 +74,11 @@ set(ICEORYX2_C_SHARED_LIB_LINK_FILE ${RUST_BUILD_ARTIFACT_PATH}/${ICEORYX2_C_SHA
+ set(ICEORYX2_C_SHARED_LIB_DLL_FILE) # intentionally empty; only used on Windows
+ 
+ list(APPEND ICEORYX2_C_LIB_ARTIFACTS ${ICEORYX2_C_STATIC_LIB_LINK_FILE})
+-list(APPEND ICEORYX2_C_LIB_ARTIFACTS ${ICEORYX2_C_SHARED_LIB_LINK_FILE})
++
++if(BUILD_SHARED_LIBS)
++  list(APPEND ICEORYX2_C_LIB_ARTIFACTS ${ICEORYX2_C_SHARED_LIB_LINK_FILE})
++endif()
++
+ if(WIN32)
+     set(ICEORYX2_C_SHARED_LIB_DLL_FILE ${RUST_BUILD_ARTIFACT_PATH}/${ICEORYX2_C_LIB}.dll)
+     list(APPEND ICEORYX2_C_LIB_ARTIFACTS ${ICEORYX2_C_SHARED_LIB_DLL_FILE})
+diff --git a/iceoryx2-ffi/c/cmake/install.cmake b/iceoryx2-ffi/c/cmake/install.cmake
+index db188137..f94ecd4e 100644
+--- a/iceoryx2-ffi/c/cmake/install.cmake
++++ b/iceoryx2-ffi/c/cmake/install.cmake
+@@ -48,6 +48,7 @@ configure_package_config_file(
+ #
+ 
+ # target directories
++if(BUILD_SHARED_LIBS)
+ install(
+     TARGETS includes-only static-lib shared-lib
+     EXPORT ${TARGETS_EXPORT_NAME}
+@@ -55,6 +56,15 @@ install(
+     LIBRARY DESTINATION ${DESTINATION_LIBDIR} COMPONENT lib
+     ARCHIVE DESTINATION ${DESTINATION_LIBDIR} COMPONENT lib
+ )
++else()
++install(
++    TARGETS includes-only static-lib 
++    EXPORT ${TARGETS_EXPORT_NAME}
++    RUNTIME DESTINATION ${DESTINATION_BINDIR} COMPONENT bin
++    LIBRARY DESTINATION ${DESTINATION_LIBDIR} COMPONENT lib
++    ARCHIVE DESTINATION ${DESTINATION_LIBDIR} COMPONENT lib
++)
++endif()
+ 
+ # header
+ install(
+diff --git a/iceoryx2-ffi/cxx/CMakeLists.txt b/iceoryx2-ffi/cxx/CMakeLists.txt
+index 34b96e72..a3cc1caf 100644
+--- a/iceoryx2-ffi/cxx/CMakeLists.txt
++++ b/iceoryx2-ffi/cxx/CMakeLists.txt
+@@ -103,6 +103,7 @@ target_link_libraries(static-lib-cxx
+ 
+ # shared lib
+ 
++if(BUILD_SHARED_LIBS)
+ add_library(shared-lib-cxx SHARED $<TARGET_OBJECTS:iceoryx2-cxx-object-lib>)
+ add_library(iceoryx2-cxx::shared-lib-cxx ALIAS shared-lib-cxx)
+ 
+@@ -120,6 +121,7 @@ target_link_libraries(shared-lib-cxx
+     iceoryx2-c::shared-lib
+     iceoryx2-cxx::includes-only-cxx
+ )
++endif()
+ 
+ # include install setup
+ 
+diff --git a/iceoryx2-ffi/cxx/cmake/install.cmake b/iceoryx2-ffi/cxx/cmake/install.cmake
+index a1241b81..4cd28195 100644
+--- a/iceoryx2-ffi/cxx/cmake/install.cmake
++++ b/iceoryx2-ffi/cxx/cmake/install.cmake
+@@ -48,6 +48,7 @@ configure_package_config_file(
+ #
+ 
+ # target directories
++if(BUILD_SHARED_LIBS)
+ install(
+     TARGETS includes-only-cxx static-lib-cxx shared-lib-cxx
+     EXPORT ${TARGETS_EXPORT_NAME}
+@@ -55,7 +56,15 @@ install(
+     LIBRARY DESTINATION ${DESTINATION_LIBDIR} COMPONENT lib
+     ARCHIVE DESTINATION ${DESTINATION_LIBDIR} COMPONENT lib
+ )
+-
++else()
++install(
++    TARGETS includes-only-cxx static-lib-cxx
++    EXPORT ${TARGETS_EXPORT_NAME}
++    RUNTIME DESTINATION ${DESTINATION_BINDIR} COMPONENT bin
++    LIBRARY DESTINATION ${DESTINATION_LIBDIR} COMPONENT lib
++    ARCHIVE DESTINATION ${DESTINATION_LIBDIR} COMPONENT lib
++)
++endif()
+ # header
+ install(
+     # the '/' at the end is important in order to not have the 'include' folder installed but only the content
