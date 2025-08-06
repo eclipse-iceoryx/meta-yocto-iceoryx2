@@ -7,7 +7,7 @@ inherit cmake
 DEPENDS = " acl"
 
 SRC_URI = "git://git@github.com/eclipse-iceoryx/iceoryx.git;protocol=ssh;branch=main"
-SRCREV = "c616c3bd0f4147af6d5b33e89f66136da50d7902"
+SRCREV = "a22f16a12192a007e0695ba4375fe2f4913d5733"
 
 S = "${WORKDIR}/git"
 

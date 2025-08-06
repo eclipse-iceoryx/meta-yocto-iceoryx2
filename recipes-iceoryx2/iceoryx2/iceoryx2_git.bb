@@ -9,7 +9,7 @@ do_compile[network] = "1"
 DEPENDS = " iceoryx"
 
 SRC_URI = "git://github.com/eclipse-iceoryx/iceoryx2.git;protocol=https;branch=main"
-SRCREV = "7966fcf959eaaab204630217efa2f060f112e128"
+SRCREV = "70c925416482c821df04d564e3b8ecf91cd1191c"
 
 S = "${WORKDIR}/git"
 
